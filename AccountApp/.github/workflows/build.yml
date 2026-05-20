@@ -1,4 +1,4 @@
-name: Build & Deploy to appetize.io
+name: Build Flutter App
 
 on:
   push:
@@ -6,98 +6,56 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-ios:
-    name: Build iOS Simulator App
-    runs-on: macos-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.29.3'
-          channel: 'stable'
-
-      - name: Get dependencies
-        run: flutter pub get
-
-      - name: Build iOS (Simulator, no codesign)
-        run: |
-          flutter build ios \
-            --debug \
-            --simulator \
-            --no-codesign
-
-      - name: Zip Runner.app
-        run: |
-          cd build/ios/iphonesimulator
-          zip -r Runner.app.zip Runner.app
-
-      - name: Upload to appetize.io
-        id: appetize
-        run: |
-          if [ -z "${{ secrets.APPETIZE_PUBLIC_KEY }}" ]; then
-            RESPONSE=$(curl --http1.1 -s \
-              -H "Authorization: token ${{ secrets.APPETIZE_TOKEN }}" \
-              -F "file=@build/ios/iphonesimulator/Runner.app.zip" \
-              -F "platform=ios" \
-              https://api.appetize.io/v1/apps)
-          else
-            RESPONSE=$(curl --http1.1 -s \
-              -H "Authorization: token ${{ secrets.APPETIZE_TOKEN }}" \
-              -F "file=@build/ios/iphonesimulator/Runner.app.zip" \
-              -F "platform=ios" \
-              https://api.appetize.io/v1/apps/${{ secrets.APPETIZE_PUBLIC_KEY }})
-          fi
-          echo "Response: $RESPONSE"
-          PUBLIC_KEY=$(echo $RESPONSE | python3 -c "import sys,json; print(json.load(sys.stdin).get('publicKey',''))")
-          echo "public_key=$PUBLIC_KEY" >> $GITHUB_OUTPUT
-          echo "appetize_url=https://appetize.io/app/$PUBLIC_KEY" >> $GITHUB_OUTPUT
-
-      - name: Print appetize.io link
-        run: |
-          echo "============================================"
-          echo "  iOS App is ready for testing!"
-          echo "  URL: ${{ steps.appetize.outputs.appetize_url }}"
-          echo "  Public Key: ${{ steps.appetize.outputs.public_key }}"
-          echo "============================================"
-
-      - name: Upload .app as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-simulator-app
-          path: build/ios/iphonesimulator/Runner.app.zip
-          retention-days: 7
-
   build-android:
     name: Build Android APK
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.29.3'
+          flutter-version: '3.41.9'
           channel: 'stable'
 
-      - name: Get dependencies
-        run: flutter pub get
+      - run: flutter pub get
 
-      - name: Build Android APK
-        run: flutter build apk --debug
+      - run: flutter build apk --debug
 
-      - name: Upload APK as artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: android-debug-apk
           path: build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 7
+
+  build-ios:
+    name: Build iOS Simulator App
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.9'
+          channel: 'stable'
+
+      - run: flutter pub get
+
+      - run: pod repo update
+        working-directory: ios
+
+      - run: flutter build ios --debug --simulator --no-codesign
+
+      - run: |
+          cd build/ios/iphonesimulator
+          zip -r Runner.app.zip Runner.app
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios-simulator-app
+          path: build/ios/iphonesimulator/Runner.app.zip
           retention-days: 7
