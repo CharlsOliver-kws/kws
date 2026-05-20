@@ -53,10 +53,8 @@ jobs:
 
       - run: flutter build ios --debug --simulator --no-codesign
 
-      - run: cd build/ios/iphonesimulator && zip -r Runner.app.zip Runner.app
-
       - uses: actions/upload-artifact@v4
         with:
           name: ios-simulator-app
-          path: AccountApp/build/ios/iphonesimulator/Runner.app.zip
+          path: AccountApp/build/ios/iphonesimulator/Runner.app
           retention-days: 7
