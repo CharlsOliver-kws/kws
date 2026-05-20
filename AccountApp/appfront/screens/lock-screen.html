@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>锁屏通知 — VoiceLedger</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  body {
+    background: oklch(96% 0.008 240);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: var(--font-body);
+  }
+
+  .showcase {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+  }
+  .showcase-header {
+    text-align: center;
+  }
+  .showcase-header h1 {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--fg);
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  .showcase-header p {
+    font-size: 15px;
+    color: var(--muted);
+  }
+
+  .screens-row {
+    display: flex;
+    gap: 48px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .phone-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .phone-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* === Phone frames === */
+  .phone-frame {
+    position: relative;
+    border-radius: 36px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+  }
+  .phone-frame.android {
+    width: 320px;
+    height: 640px;
+    background: oklch(20% 0.015 240);
+  }
+  .phone-frame.ios {
+    width: 300px;
+    height: 600px;
+    background: oklch(15% 0.01 260);
+  }
+
+  /* === Lock Screen Content === */
+  .lock-screen {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    color: #fff;
+  }
+
+  /* Status bar */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    opacity: 0.9;
+  }
+  .ios .status-bar {
+    padding-top: 42px;
+  }
+
+  /* Clock area */
+  .clock-area {
+    padding: 20px 24px 12px;
+  }
+  .lock-time {
+    font-family: var(--font-display);
+    font-size: 52px;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .lock-date {
+    font-size: 16px;
+    font-weight: 500;
+    opacity: 0.7;
+    margin-top: 4px;
+  }
+
+  /* Notification area */
+  .notifications {
+    flex: 1;
+    padding: 16px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: hidden;
+  }
+
+  .notification {
+    background: oklch(100% 0 0 / 0.14);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 14px 16px;
+    display: flex;
+    gap: 12px;
+    border: 0.5px solid oklch(100% 0 0 / 0.12);
+  }
+  .notification.ios-notif {
+    border-radius: 20px;
+    padding: 16px 18px;
+    gap: 14px;
+  }
+
+  .notif-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .notif-icon svg {
+    width: 20px; height: 20px;
+  }
+  .notif-body {
+    flex: 1;
+    min-width: 0;
+  }
+  .notif-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .notif-app {
+    font-size: 12px;
+    font-weight: 600;
+    opacity: 0.8;
+    letter-spacing: 0.02em;
+  }
+  .notif-time {
+    font-size: 11px;
+    opacity: 0.5;
+  }
+  .notif-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+  .notif-body-text {
+    font-size: 12px;
+    opacity: 0.65;
+    line-height: 1.5;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .notif-divider {
+    width: 1px; height: 10px;
+    background: oklch(100% 0 0 / 0.25);
+  }
+
+  /* Home indicator */
+  .home-indicator {
+    padding: 8px 0 6px;
+    display: flex;
+    justify-content: center;
+  }
+  .home-indicator-bar {
+    width: 120px; height: 4px;
+    border-radius: 3px;
+    background: oklch(100% 0 0 / 0.5);
+  }
+  .ios .home-indicator {
+    padding-bottom: 8px;
+  }
+
+  /* === Notification Shade (Android) === */
+  .notification-shade {
+    width: 100%;
+    height: 100%;
+    background: oklch(18% 0.01 250);
+    display: flex;
+    flex-direction: column;
+  }
+  .shade-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px 10px;
+  }
+  .shade-time {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    opacity: 0.9;
+    margin-left: 4px;
+  }
+  .shade-icons {
+    display: flex;
+    gap: 14px;
+    font-size: 13px;
+    opacity: 0.7;
+  }
+  .quick-settings {
+    display: flex;
+    gap: 12px;
+    padding: 8px 18px 14px;
+  }
+  .qs-tile {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: oklch(100% 0 0 / 0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .notifications-list {
+    flex: 1;
+    padding: 0 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: hidden;
+  }
+  .shade-notification {
+    background: oklch(100% 0 0 / 0.08);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    gap: 10px;
+  }
+  .shade-notif-body {
+    flex: 1;
+    min-width: 0;
+  }
+  .shade-notif-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 3px;
+  }
+  .shade-notif-app-icon {
+    width: 18px; height: 18px;
+    border-radius: 4px;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+  .shade-notif-app {
+    font-size: 11px;
+    font-weight: 600;
+    color: oklch(85% 0.02 250);
+  }
+  .shade-notif-time {
+    font-size: 11px;
+    color: oklch(100% 0 0 / 0.4);
+    margin-left: auto;
+  }
+  .shade-notif-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 3px;
+  }
+  .shade-notif-text {
+    font-size: 12px;
+    color: oklch(100% 0 0 / 0.55);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* === Back link === */
+  .back-link {
+    margin-top: 24px;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .back-link:hover { text-decoration: underline; }
+
+  /* === Empty state (notification off) === */
+  .notif-off {
+    padding: 60px 20px;
+    text-align: center;
+    color: oklch(100% 0 0 / 0.4);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .notif-off-icon {
+    font-size: 28px;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  @media (max-width: 700px) {
+    .screens-row { flex-direction: column; align-items: center; }
+  }
+</style>
+</head>
+<body>
+<div class="showcase">
+  <div class="showcase-header">
+    <h1>锁屏通知</h1>
+    <p>每次记账后自动刷新通知内容 &middot; 点击通知即可打开 App</p>
+  </div>
+
+  <div class="screens-row">
+
+    <!-- Android Lock Screen -->
+    <div class="phone-wrapper">
+      <span class="phone-label">Android · 锁屏</span>
+      <div class="phone-frame android" style="height: 680px;">
+        <div class="lock-screen">
+          <div class="status-bar">
+            <span>09:41</span>
+            <span style="display:flex;gap:6px;align-items:center;">
+              <span>&#x1F4F6;</span> <span>&#x1F50B;</span>
+            </span>
+          </div>
+          <div class="clock-area">
+            <div class="lock-time">9:41</div>
+            <div class="lock-date">5月19日 星期一</div>
+          </div>
+          <div class="notifications">
+            <!-- VoiceLedger notification -->
+            <div class="notification">
+              <div class="notif-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+                  <path d="M19 9v3a7 7 0 0 1-14 0V9"/>
+                  <line x1="12" y1="19" x2="12" y2="22"/>
+                </svg>
+              </div>
+              <div class="notif-body">
+                <div class="notif-header">
+                  <span class="notif-app">VoiceLedger</span>
+                  <span class="notif-time">刚刚</span>
+                </div>
+                <div class="notif-title">今日记账摘要</div>
+                <div class="notif-body-text">
+                  <span>今日支出 ¥127.50</span>
+                  <span class="notif-divider"></span>
+                  <span>4笔</span>
+                  <span class="notif-divider"></span>
+                  <span>本月 ¥3,842</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Other notifications for context -->
+            <div class="notification">
+              <div class="notif-icon" style="background:oklch(50% 0.16 255);">
+                <span style="font-size:16px;">&#x2709;</span>
+              </div>
+              <div class="notif-body">
+                <div class="notif-header">
+                  <span class="notif-app">Gmail</span>
+                  <span class="notif-time">10分钟前</span>
+                </div>
+                <div class="notif-title">新邮件</div>
+                <div class="notif-body-text">您的账单已生成</div>
+              </div>
+            </div>
+          </div>
+          <div class="home-indicator">
+            <div class="home-indicator-bar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- iOS Lock Screen -->
+    <div class="phone-wrapper">
+      <span class="phone-label">iOS · 锁屏</span>
+      <div class="phone-frame ios">
+        <div class="lock-screen ios">
+          <div class="status-bar">
+            <span>9:41</span>
+            <span style="display:flex;gap:6px;align-items:center;">
+              <span>&#x1F4F6;</span> <span>&#x1F4F6;</span> <span>&#x1F50B;</span>
+            </span>
+          </div>
+          <div class="clock-area">
+            <div class="lock-time">9:41</div>
+            <div class="lock-date">Monday, May 19</div>
+          </div>
+          <div class="notifications">
+            <div class="notification ios-notif">
+              <div class="notif-icon" style="border-radius:10px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+                  <path d="M19 9v3a7 7 0 0 1-14 0V9"/>
+                  <line x1="12" y1="19" x2="12" y2="22"/>
+                </svg>
+              </div>
+              <div class="notif-body">
+                <div class="notif-header">
+                  <span class="notif-app">VoiceLedger</span>
+                  <span class="notif-time">now</span>
+                </div>
+                <div class="notif-title">Today's Summary</div>
+                <div class="notif-body-text">
+                  <span>¥127.50 today</span>
+                  <span class="notif-divider"></span>
+                  <span>4 entries</span>
+                  <span class="notif-divider"></span>
+                  <span>¥3,842 MTD</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="notification ios-notif">
+              <div class="notif-icon" style="background:oklch(50% 0.16 255); border-radius:10px;">
+                <span style="font-size:16px;">&#x2709;</span>
+              </div>
+              <div class="notif-body">
+                <div class="notif-header">
+                  <span class="notif-app">Mail</span>
+                  <span class="notif-time">10m ago</span>
+                </div>
+                <div class="notif-title">New Message</div>
+                <div class="notif-body-text">Your receipt is ready</div>
+              </div>
+            </div>
+          </div>
+          <div class="home-indicator">
+            <div class="home-indicator-bar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Android Notification Shade (下拉) -->
+    <div class="phone-wrapper">
+      <span class="phone-label">Android · 下拉通知栏</span>
+      <div class="phone-frame android" style="height: 680px;">
+        <div class="notification-shade">
+          <div class="shade-header">
+            <span class="shade-time">9:41</span>
+            <div class="shade-icons">
+              <span>&#x1F4F6;</span>
+              <span>&#x1F50A;</span>
+              <span>&#x1F50B;</span>
+              <span>&#x2699;</span>
+            </div>
+          </div>
+          <div class="quick-settings">
+            <div class="qs-tile" style="background:oklch(56% 0.12 170 / 0.5);">&#x1F4A1;</div>
+            <div class="qs-tile">&#x1F50A;</div>
+            <div class="qs-tile">&#x1F4F6;</div>
+            <div class="qs-tile">&#x1F4F1;</div>
+            <div class="qs-tile">&#x1F310;</div>
+          </div>
+          <div class="notifications-list">
+            <div class="shade-notification">
+              <div class="shade-notif-app-icon"></div>
+              <div class="shade-notif-body">
+                <div class="shade-notif-header">
+                  <span class="shade-notif-app">VoiceLedger</span>
+                  <span class="shade-notif-time">刚刚</span>
+                </div>
+                <div class="shade-notif-title">今日记账摘要</div>
+                <div class="shade-notif-text">
+                  <span>今日支出 ¥127.50 (4笔)</span>
+                  <span style="opacity:0.3;">|</span>
+                  <span>本月累计 ¥3,842 (26笔)</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="shade-notification">
+              <div class="shade-notif-app-icon" style="background:oklch(50% 0.16 255);"></div>
+              <div class="shade-notif-body">
+                <div class="shade-notif-header">
+                  <span class="shade-notif-app">Gmail</span>
+                  <span class="shade-notif-time">10分钟前</span>
+                </div>
+                <div class="shade-notif-title">新邮件</div>
+                <div class="shade-notif-text">您的账单已生成</div>
+              </div>
+            </div>
+
+            <div class="shade-notification">
+              <div class="shade-notif-app-icon" style="background:oklch(58% 0.16 75);"></div>
+              <div class="shade-notif-body">
+                <div class="shade-notif-header">
+                  <span class="shade-notif-app">Calendar</span>
+                  <span class="shade-notif-time">30分钟前</span>
+                </div>
+                <div class="shade-notif-title">即将开始：团队周会</div>
+                <div class="shade-notif-text">10:00 · 会议室A</div>
+              </div>
+            </div>
+          </div>
+          <div class="home-indicator">
+            <div class="home-indicator-bar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notification Off state -->
+    <div class="phone-wrapper">
+      <span class="phone-label">iOS · 通知已关闭</span>
+      <div class="phone-frame ios">
+        <div class="lock-screen ios">
+          <div class="status-bar">
+            <span>9:41</span>
+            <span style="display:flex;gap:6px;align-items:center;">
+              <span>&#x1F4F6;</span> <span>&#x1F4F6;</span> <span>&#x1F50B;</span>
+            </span>
+          </div>
+          <div class="clock-area">
+            <div class="lock-time">9:41</div>
+            <div class="lock-date">Monday, May 19</div>
+          </div>
+          <div class="notifications">
+            <div class="notif-off">
+              <span class="notif-off-icon">&#x1F515;</span>
+              No notifications<br>VoiceLedger lock screen is off
+            </div>
+          </div>
+          <div class="home-indicator">
+            <div class="home-indicator-bar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <a href="../index.html" class="back-link">← 返回启动页</a>
+</div>
+</body>
+</html>

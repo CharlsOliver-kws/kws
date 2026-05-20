@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Recurse -Force)",
+      "Bash(Select-Object FullName)",
+      "Bash(cd /d D:/myfirstapp/AccountApp)",
+      "Bash(flutter create *)",
+      "Bash(flutter pub *)",
+      "Bash(flutter build *)",
+      "Bash(./gradlew clean *)",
+      "Bash(flutter clean *)",
+      "Bash(adb pair *)",
+      "Bash(C:\\\\Users\\\\kws\\\\AppData\\\\Local\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe pair *)",
+      "PowerShell(& \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\" pair 10.41.78.74:42793 094732)",
+      "Bash(flutter run *)",
+      "PowerShell(& \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\" connect 10.41.78.74:42503)",
+      "Bash(flutter analyze *)",
+      "Bash(Select-String -Pattern \"flutter_riverpod\")",
+      "Bash(C:/Users/kws/AppData/Local/Android/sdk/platform-tools/adb.exe connect *)"
+    ]
+  }
+}

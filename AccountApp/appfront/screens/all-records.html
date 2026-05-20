@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>全部记录 — VoiceLedger</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  .app {
+    max-width: 412px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+  }
+  .app-bar {
+    display: flex;
+    align-items: center;
+    padding: 16px var(--space-md);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    gap: var(--space-md);
+  }
+  .back-btn {
+    width: 40px; height: 40px;
+    border: none; background: none;
+    font-size: 20px; cursor: pointer;
+    border-radius: var(--radius-full);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--fg);
+    transition: background var(--duration-fast);
+  }
+  .back-btn:hover { background: var(--accent-pale); }
+  .app-bar-title {
+    font-family: var(--font-display);
+    font-size: 18px; font-weight: 600; color: var(--fg);
+  }
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-md);
+    padding-bottom: var(--space-xl);
+  }
+
+  /* Record sections */
+  .record-section {
+    margin-bottom: var(--space-lg);
+  }
+  .record-date-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-sm) 0 10px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: var(--space-sm);
+  }
+  .record-date {
+    font-size: 15px; font-weight: 600; color: var(--fg);
+  }
+  .record-count {
+    font-size: 13px; color: var(--muted);
+  }
+  .record-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: 12px var(--space-sm);
+    transition: background var(--duration-fast);
+  }
+  .record-item:hover { background: var(--surface); }
+  .record-item + .record-item {
+    border-top: 1px solid var(--border);
+  }
+  .record-icon {
+    width: 36px; height: 36px;
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .record-icon.food { background: oklch(92% 0.08 45); color: var(--cat-food); }
+  .record-icon.transport { background: oklch(92% 0.08 250); color: var(--cat-transport); }
+  .record-icon.shopping { background: oklch(92% 0.08 300); color: var(--cat-shopping); }
+  .record-icon.entertain { background: oklch(92% 0.08 350); color: var(--cat-entertain); }
+  .record-icon.medical { background: oklch(92% 0.09 15); color: var(--cat-medical); }
+  .record-icon.education { background: oklch(92% 0.07 160); color: var(--cat-education); }
+  .record-icon.housing { background: oklch(92% 0.05 70); color: var(--cat-housing); }
+  .record-icon.other { background: oklch(92% 0.01 260); color: var(--cat-other); }
+  .record-info { flex: 1; min-width: 0; }
+  .record-title {
+    font-size: 15px; font-weight: 500; color: var(--fg);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .record-time {
+    font-size: 12px; color: var(--muted); margin-top: 2px;
+  }
+  .record-amount {
+    font-family: var(--font-display);
+    font-size: 16px; font-weight: 600; color: var(--fg);
+    white-space: nowrap;
+  }
+
+  .empty-state {
+    text-align: center; padding: 60px var(--space-lg);
+  }
+  .empty-icon { font-size: 48px; margin-bottom: var(--space-md); opacity: 0.5; }
+  .empty-title {
+    font-family: var(--font-display);
+    font-size: 18px; font-weight: 600; color: var(--fg);
+    margin-bottom: var(--space-xs);
+  }
+  .empty-desc { font-size: 14px; color: var(--muted); }
+
+  .app.ios .app-bar { padding-top: 48px; }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="app-bar">
+    <a href="home.html" class="back-btn" aria-label="返回">←</a>
+    <span class="app-bar-title">全部记录</span>
+  </div>
+
+  <div class="content">
+    <!-- May 19 -->
+    <div class="record-section">
+      <div class="record-date-header">
+        <span class="record-date">今天 · 5月19日 星期一</span>
+        <span class="record-count">4笔 · ¥127.50</span>
+      </div>
+      <div class="record-item">
+        <div class="record-icon food">&#x1F37D;</div>
+        <div class="record-info">
+          <div class="record-title">午餐 · 拉面</div>
+          <div class="record-time">12:30</div>
+        </div>
+        <div class="record-amount">¥35.00</div>
+      </div>
+      <div class="record-item">
+        <div class="record-icon transport">&#x1F687;</div>
+        <div class="record-info">
+          <div class="record-title">地铁通勤</div>
+          <div class="record-time">09:15</div>
+        </div>
+        <div class="record-amount">¥7.50</div>
+      </div>
+      <div class="record-item">
+        <div class="record-icon food">&#x2615;</div>
+        <div class="record-info">
+          <div class="record-title">星巴克咖啡</div>
+          <div class="record-time">08:30</div>
+        </div>
+        <div class="record-amount">¥35.00</div>
+      </div>
+      <div class="record-item">
+        <div class="record-icon transport">&#x1F695;</div>
+        <div class="record-info">
+          <div class="record-title">打车回家</div>
+          <div class="record-time">00:15</div>
+        </div>
+        <div class="record-amount">¥50.00</div>
+      </div>
+    </div>
+
+    <!-- May 18 -->
+    <div class="record-section">
+      <div class="record-date-header">
+        <span class="record-date">昨天 · 5月18日 星期日</span>
+        <span class="record-count">3笔 · ¥256.00</span>
+      </div>
+      <div class="record-item">
+        <div class="record-icon shopping">&#x1F6CD;</div>
+        <div class="record-info">
+          <div class="record-title">超市采购</div>
+          <div class="record-time">19:45</div>
+        </div>
+        <div class="record-amount">¥156.00</div>
+      </div>
+      <div class="record-item">
+        <div class="record-icon entertain">&#x1F3AC;</div>
+        <div class="record-info">
+          <div class="record-title">电影票</div>
+          <div class="record-time">15:20</div>
+        </div>
+        <div class="record-amount">¥50.00</div>
+      </div>
+      <div class="record-item">
+        <div class="record-icon food">&#x1F37D;</div>
+        <div class="record-info">
+          <div class="record-title">晚餐</div>
+          <div class="record-time">12:00</div>
+        </div>
+        <div class="record-amount">¥50.00</div>
+      </div>
+    </div>
+
+    <!-- May 17 -->
+    <div class="record-section">
+      <div class="record-date-header">
+        <span class="record-date">5月17日 星期五</span>
+        <span class="record-count">2笔 · ¥289.00</span>
+      </div>
+      <div class="record-item">
+        <div class="record-icon education">&#x1F4DA;</div>
+        <div class="record-info">
+          <div class="record-title">书店购书</div>
+          <div class="record-time">16:30</div>
+        </div>
+        <div class="record-amount">¥89.00</div>
+      </div>
+      <div class="record-item">
+        <div class="record-icon food">&#x1F37D;</div>
+        <div class="record-info">
+          <div class="record-title">聚餐 · 海底捞</div>
+          <div class="record-time">19:30</div>
+        </div>
+        <div class="record-amount">¥200.00</div>
+      </div>
+    </div>
+
+    <!-- May 16 -->
+    <div class="record-section">
+      <div class="record-date-header">
+        <span class="record-date">5月16日 星期四</span>
+        <span class="record-count">3笔 · ¥458.00</span>
+      </div>
+      <div class="record-item">
+        <div class="record-icon housing">&#x1F3E0;</div>
+        <div class="record-info">
+          <div class="record-title">房租</div>
+          <div class="record-time">09:00</div>
+        </div>
+        <div class="record-amount">¥350.00</div>
+      </div>
+      <div class="record-item">
+        <div class="record-icon transport">&#x1F687;</div>
+        <div class="record-info">
+          <div class="record-title">地铁月卡充值</div>
+          <div class="record-time">08:00</div>
+        </div>
+        <div class="record-amount">¥108.00</div>
+      </div>
+    </div>
+
+    <!-- May 15 -->
+    <div class="record-section">
+      <div class="record-date-header">
+        <span class="record-date">5月15日 星期三</span>
+        <span class="record-count">1笔 · ¥45.00</span>
+      </div>
+      <div class="record-item">
+        <div class="record-icon medical">&#x1F3E5;</div>
+        <div class="record-info">
+          <div class="record-title">药店买药</div>
+          <div class="record-time">15:00</div>
+        </div>
+        <div class="record-amount">¥45.00</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('platform') === 'ios') {
+    document.getElementById('app').classList.add('ios');
+  }
+</script>
+</body>
+</html>

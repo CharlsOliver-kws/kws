@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>语音录音 — VoiceLedger</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  /* === App Shell === */
+  .app {
+    max-width: 412px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--bg);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* === App Bar === */
+  .app-bar {
+    display: flex;
+    align-items: center;
+    padding: 16px var(--space-md);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    gap: var(--space-md);
+  }
+  .back-btn {
+    width: 40px; height: 40px;
+    border: none;
+    background: none;
+    font-size: 20px;
+    cursor: pointer;
+    border-radius: var(--radius-full);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--fg);
+    transition: background var(--duration-fast);
+  }
+  .back-btn:hover { background: var(--accent-pale); }
+  .app-bar-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--fg);
+  }
+
+  /* === Recording Stage === */
+  .recording-stage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    background: var(--fg);
+    transition: background var(--duration-slow);
+  }
+  .recording-stage.idle {
+    background: var(--bg);
+  }
+  .recording-stage.active {
+    background: var(--fg);
+  }
+
+  /* === Idle state === */
+  .idle-content {
+    text-align: center;
+    transition: opacity var(--duration-normal);
+  }
+  .mic-circle {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: var(--accent-pale);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto var(--space-lg);
+    font-size: 48px;
+    color: var(--accent);
+    transition: all var(--duration-slow) var(--ease-out);
+  }
+  .idle-hint {
+    font-size: 16px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  /* === Active recording state === */
+  .active-content {
+    text-align: center;
+    color: var(--surface);
+    transition: opacity var(--duration-normal);
+  }
+  .mic-circle.recording {
+    width: 140px; height: 140px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 56px;
+    box-shadow: 0 0 0 0 oklch(56% 0.12 170 / 0.5);
+    animation: mic-pulse 1.8s ease-out infinite;
+  }
+  @keyframes mic-pulse {
+    0% { box-shadow: 0 0 0 0 oklch(56% 0.12 170 / 0.5); }
+    70% { box-shadow: 0 0 0 40px oklch(56% 0.12 170 / 0); }
+    100% { box-shadow: 0 0 0 0 oklch(56% 0.12 170 / 0); }
+  }
+  .recording-text {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: var(--space-lg);
+    animation: text-pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes text-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  /* === Waveform === */
+  .waveform {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    height: 60px;
+    margin: var(--space-lg) 0;
+  }
+  .waveform-bar {
+    width: 5px;
+    border-radius: 3px;
+    background: var(--accent);
+    animation: wave 1s ease-in-out infinite;
+  }
+  @keyframes wave {
+    0%, 100% { height: 12px; }
+    50% { height: 56px; }
+  }
+  .waveform-bar:nth-child(1) { animation-delay: 0s; }
+  .waveform-bar:nth-child(2) { animation-delay: 0.1s; }
+  .waveform-bar:nth-child(3) { animation-delay: 0.2s; }
+  .waveform-bar:nth-child(4) { animation-delay: 0.3s; }
+  .waveform-bar:nth-child(5) { animation-delay: 0.4s; }
+  .waveform-bar:nth-child(6) { animation-delay: 0.5s; }
+  .waveform-bar:nth-child(7) { animation-delay: 0.6s; }
+  .waveform-bar:nth-child(8) { animation-delay: 0.7s; }
+  .waveform-bar:nth-child(9) { animation-delay: 0.8s; }
+  .waveform-bar:nth-child(10) { animation-delay: 0.9s; }
+  .waveform-bar:nth-child(11) { animation-delay: 1.0s; }
+
+  .release-hint {
+    font-size: 14px;
+    opacity: 0.6;
+    margin-top: var(--space-lg);
+  }
+
+  /* === Cancel zone === */
+  .cancel-zone {
+    position: absolute;
+    bottom: 80px;
+    padding: 16px 32px;
+    background: rgba(255,255,255,0.1);
+    border: 1.5px solid rgba(255,255,255,0.25);
+    border-radius: var(--radius-full);
+    color: var(--surface);
+    font-size: 15px;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all var(--duration-normal);
+  }
+  .cancel-zone.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .cancel-zone.active {
+    background: var(--danger);
+    border-color: var(--danger);
+  }
+
+  /* === Processing state === */
+  .processing {
+    text-align: center;
+    color: var(--surface);
+  }
+  .spinner {
+    width: 52px; height: 52px;
+    border: 3px solid rgba(255,255,255,0.2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto var(--space-lg);
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .processing-text {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: var(--space-sm);
+  }
+  .processing-sub {
+    font-size: 14px;
+    opacity: 0.6;
+  }
+
+  /* === Result state === */
+  .result {
+    text-align: center;
+    color: var(--surface);
+  }
+  .result-icon {
+    font-size: 56px;
+    margin-bottom: var(--space-md);
+  }
+  .result-text {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: var(--space-sm);
+  }
+  .result-detail {
+    font-size: 15px;
+    opacity: 0.7;
+    margin-bottom: var(--space-xl);
+  }
+  .result-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 36px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-full);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--duration-fast);
+  }
+  .result-back:hover { transform: translateY(-2px); }
+
+  /* === Platform Variants === */
+  .app.ios .app-bar { padding-top: 48px; }
+
+  /* === State visibility === */
+  .stage-content { display: none; }
+  .stage-content.show { display: flex; flex-direction: column; align-items: center; }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <!-- App Bar -->
+  <div class="app-bar">
+    <a href="home.html" class="back-btn" aria-label="返回">←</a>
+    <span class="app-bar-title">语音记账</span>
+  </div>
+
+  <!-- Recording Stage -->
+  <div class="recording-stage idle" id="stage">
+
+    <!-- Idle -->
+    <div class="stage-content show" id="idle-state">
+      <div class="idle-content">
+        <div class="mic-circle">&#x1F399;</div>
+        <p class="idle-hint">按住下方按钮开始录音</p>
+      </div>
+    </div>
+
+    <!-- Active Recording -->
+    <div class="stage-content" id="recording-state">
+      <div class="active-content">
+        <div class="mic-circle recording">&#x1F3A4;</div>
+        <p class="recording-text">正在录音...</p>
+        <div class="waveform">
+          <div class="waveform-bar"></div><div class="waveform-bar"></div>
+          <div class="waveform-bar"></div><div class="waveform-bar"></div>
+          <div class="waveform-bar"></div><div class="waveform-bar"></div>
+          <div class="waveform-bar"></div><div class="waveform-bar"></div>
+          <div class="waveform-bar"></div><div class="waveform-bar"></div>
+          <div class="waveform-bar"></div>
+        </div>
+        <p class="release-hint">松开完成录音</p>
+      </div>
+      <div class="cancel-zone" id="cancelZone">滑动到此处取消</div>
+    </div>
+
+    <!-- Processing -->
+    <div class="stage-content" id="processing-state">
+      <div class="processing">
+        <div class="spinner"></div>
+        <p class="processing-text">正在识别...</p>
+        <p class="processing-sub">语音转文字中</p>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div class="stage-content" id="result-state">
+      <div class="result">
+        <div class="result-icon">&#x2705;</div>
+        <p class="result-text">记录已添加</p>
+        <p class="result-detail" id="resultDetail">午餐 · ¥35.00</p>
+        <button class="result-back" onclick="window.location.href='home.html'">返回首页</button>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div class="stage-content" id="error-state">
+      <div class="result">
+        <div class="result-icon">&#x274C;</div>
+        <p class="result-text">识别失败</p>
+        <p class="result-detail" id="errorDetail">请重试或使用手动记账</p>
+        <button class="result-back" onclick="resetToIdle()">重试</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hold Button -->
+  <div style="position:fixed;bottom:32px;left:50%;transform:translateX(-50%);z-index:20;text-align:center;">
+    <button id="holdBtn"
+      style="width:80px;height:80px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:32px;box-shadow:0 4px 20px oklch(56% 0.12 170 / 0.4);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;">
+      &#x1F399;
+    </button>
+    <p style="margin-top:10px;font-size:13px;color:var(--muted);font-weight:500;">长按录音</p>
+  </div>
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('platform') === 'ios') {
+    document.getElementById('app').classList.add('ios');
+  }
+
+  const stage = document.getElementById('stage');
+  const holdBtn = document.getElementById('holdBtn');
+  let isRecording = false;
+  let isCancelling = false;
+  let recordingY = 0;
+
+  function showState(id) {
+    document.querySelectorAll('.stage-content').forEach(el => el.classList.remove('show'));
+    document.getElementById(id).classList.add('show');
+  }
+
+  function resetToIdle() {
+    stage.className = 'recording-stage idle';
+    showState('idle-state');
+    holdBtn.style.display = '';
+  }
+
+  // Long press to record
+  let pressTimer;
+  holdBtn.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    pressTimer = setTimeout(() => startRecording(), 300);
+  });
+  holdBtn.addEventListener('mouseup', (e) => {
+    e.preventDefault();
+    clearTimeout(pressTimer);
+    if (isRecording) stopRecording();
+  });
+  holdBtn.addEventListener('mouseleave', (e) => {
+    if (isRecording) {
+      isCancelling = true;
+      document.getElementById('cancelZone').classList.add('active');
+    }
+    clearTimeout(pressTimer);
+    if (isRecording) stopRecording();
+  });
+
+  // Touch events for mobile
+  holdBtn.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    recordingY = e.touches[0].clientY;
+    pressTimer = setTimeout(() => startRecording(), 300);
+  });
+  holdBtn.addEventListener('touchmove', (e) => {
+    const dy = recordingY - e.touches[0].clientY;
+    if (dy > 80) {
+      isCancelling = true;
+      document.getElementById('cancelZone').classList.add('active');
+    } else {
+      isCancelling = false;
+      document.getElementById('cancelZone').classList.remove('active');
+    }
+  });
+  holdBtn.addEventListener('touchend', (e) => {
+    clearTimeout(pressTimer);
+    if (isRecording) stopRecording();
+  });
+
+  function startRecording() {
+    isRecording = true;
+    stage.className = 'recording-stage active';
+    showState('recording-state');
+    document.getElementById('cancelZone').classList.add('visible');
+    holdBtn.style.background = 'oklch(48% 0.10 170)';
+    holdBtn.style.transform = 'scale(0.95)';
+  }
+
+  function stopRecording() {
+    isRecording = false;
+    holdBtn.style.background = '';
+    holdBtn.style.transform = '';
+    document.getElementById('cancelZone').classList.remove('visible','active');
+
+    if (isCancelling) {
+      resetToIdle();
+      isCancelling = false;
+      return;
+    }
+
+    // Show processing
+    stage.className = 'recording-stage active';
+    showState('processing-state');
+
+    // Simulate ASR + AI processing
+    setTimeout(() => {
+      showState('result-state');
+      document.getElementById('resultDetail').textContent = '午餐 拉面 · ¥35.00';
+    }, 2000);
+  }
+</script>
+</body>
+</html>

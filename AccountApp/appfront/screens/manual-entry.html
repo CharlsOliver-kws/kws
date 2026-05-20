@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>手动记账 — VoiceLedger</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  .app {
+    max-width: 412px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+  }
+  .app-bar {
+    display: flex;
+    align-items: center;
+    padding: 16px var(--space-md);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    gap: var(--space-md);
+  }
+  .back-btn {
+    width: 40px; height: 40px;
+    border: none; background: none;
+    font-size: 20px; cursor: pointer;
+    border-radius: var(--radius-full);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--fg);
+  }
+  .back-btn:hover { background: var(--accent-pale); }
+  .app-bar-title {
+    font-family: var(--font-display);
+    font-size: 18px; font-weight: 600; color: var(--fg);
+    flex: 1;
+  }
+  .save-btn {
+    padding: 8px 20px;
+    border: none; border-radius: var(--radius-full);
+    background: var(--accent); color: #fff;
+    font-size: 15px; font-weight: 600; cursor: pointer;
+    transition: all var(--duration-fast);
+  }
+  .save-btn:hover { transform: translateY(-1px); }
+  .save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .content {
+    flex: 1;
+    padding: var(--space-lg) var(--space-md);
+    overflow-y: auto;
+  }
+
+  /* Amount input */
+  .amount-section {
+    margin-bottom: var(--space-xl);
+    text-align: center;
+  }
+  .amount-label {
+    font-size: 13px; color: var(--muted); font-weight: 500;
+    margin-bottom: var(--space-sm); text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .amount-display {
+    font-family: var(--font-display);
+    font-size: 48px; font-weight: 700; color: var(--fg);
+    letter-spacing: -0.02em; padding: 8px 0;
+    border-bottom: 2px solid var(--accent-pale);
+    display: inline-block; min-width: 120px;
+    cursor: text;
+  }
+  .amount-display:focus { outline: none; border-bottom-color: var(--accent); }
+  .amount-display.empty { color: var(--border); }
+
+  /* Category grid */
+  .section-title {
+    font-size: 13px; color: var(--muted); font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-bottom: var(--space-md);
+  }
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-sm);
+    margin-bottom: var(--space-xl);
+  }
+  .cat-btn {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 6px; padding: 14px 8px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-out);
+    font-family: var(--font-body);
+  }
+  .cat-btn:hover { border-color: var(--accent-soft); }
+  .cat-btn.selected {
+    border-color: var(--accent); background: var(--accent-pale);
+    box-shadow: var(--shadow-sm);
+  }
+  .cat-icon {
+    width: 36px; height: 36px;
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .cat-icon.food { background: oklch(92% 0.08 45); color: var(--cat-food); }
+  .cat-icon.transport { background: oklch(92% 0.08 250); color: var(--cat-transport); }
+  .cat-icon.shopping { background: oklch(92% 0.08 300); color: var(--cat-shopping); }
+  .cat-icon.entertain { background: oklch(92% 0.08 350); color: var(--cat-entertain); }
+  .cat-icon.medical { background: oklch(92% 0.09 15); color: var(--cat-medical); }
+  .cat-icon.education { background: oklch(92% 0.07 160); color: var(--cat-education); }
+  .cat-icon.housing { background: oklch(92% 0.05 70); color: var(--cat-housing); }
+  .cat-icon.other { background: oklch(92% 0.01 260); color: var(--cat-other); }
+  .cat-name { font-size: 12px; font-weight: 500; color: var(--fg); }
+
+  /* Date/time row */
+  .datetime-row {
+    display: flex;
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
+  }
+  .datetime-field {
+    flex: 1;
+  }
+  .datetime-label {
+    font-size: 13px; color: var(--muted); font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .datetime-input {
+    width: 100%; padding: 12px var(--space-md);
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: var(--radius-md); font-size: 15px; font-family: var(--font-body);
+    color: var(--fg); cursor: pointer;
+  }
+  .datetime-input:focus { outline: none; border-color: var(--accent); }
+
+  /* Notes */
+  .notes-input {
+    width: 100%; padding: var(--space-md);
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: var(--radius-md); font-size: 15px; font-family: var(--font-body);
+    color: var(--fg); resize: none; height: 80px;
+  }
+  .notes-input:focus { outline: none; border-color: var(--accent); }
+
+  /* SnackBar */
+  .snackbar {
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--fg); color: var(--surface); padding: 12px 24px;
+    border-radius: var(--radius-full); font-size: 14px; font-weight: 500;
+    opacity: 0; transition: all var(--duration-normal) var(--ease-out);
+    z-index: 200; white-space: nowrap;
+  }
+  .snackbar.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .app.ios .app-bar { padding-top: 48px; }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="app-bar">
+    <a href="home.html" class="back-btn" aria-label="取消">←</a>
+    <span class="app-bar-title">手动记账</span>
+    <button class="save-btn" id="saveBtn" onclick="doSave()">保存</button>
+  </div>
+
+  <div class="content">
+    <!-- Amount -->
+    <div class="amount-section">
+      <div class="amount-label">金额</div>
+      <div class="amount-display empty" id="amountDisplay" contenteditable="true" inputmode="decimal" oninput="onAmountInput(this)">¥0.00</div>
+    </div>
+
+    <!-- Category -->
+    <div class="section-title">分类</div>
+    <div class="category-grid" id="categoryGrid">
+      <button class="cat-btn" data-cat="food" onclick="selectCat(this)" aria-label="餐饮">
+        <div class="cat-icon food">&#x1F37D;</div>
+        <span class="cat-name">餐饮</span>
+      </button>
+      <button class="cat-btn" data-cat="transport" onclick="selectCat(this)" aria-label="交通">
+        <div class="cat-icon transport">&#x1F687;</div>
+        <span class="cat-name">交通</span>
+      </button>
+      <button class="cat-btn" data-cat="shopping" onclick="selectCat(this)" aria-label="购物">
+        <div class="cat-icon shopping">&#x1F6CD;</div>
+        <span class="cat-name">购物</span>
+      </button>
+      <button class="cat-btn" data-cat="entertain" onclick="selectCat(this)" aria-label="娱乐">
+        <div class="cat-icon entertain">&#x1F3AC;</div>
+        <span class="cat-name">娱乐</span>
+      </button>
+      <button class="cat-btn" data-cat="medical" onclick="selectCat(this)" aria-label="医疗">
+        <div class="cat-icon medical">&#x1F3E5;</div>
+        <span class="cat-name">医疗</span>
+      </button>
+      <button class="cat-btn" data-cat="education" onclick="selectCat(this)" aria-label="教育">
+        <div class="cat-icon education">&#x1F4DA;</div>
+        <span class="cat-name">教育</span>
+      </button>
+      <button class="cat-btn" data-cat="housing" onclick="selectCat(this)" aria-label="住房">
+        <div class="cat-icon housing">&#x1F3E0;</div>
+        <span class="cat-name">住房</span>
+      </button>
+      <button class="cat-btn" data-cat="other" onclick="selectCat(this)" aria-label="其他">
+        <div class="cat-icon other">&#x1F4E6;</div>
+        <span class="cat-name">其他</span>
+      </button>
+    </div>
+
+    <!-- Date & Time -->
+    <div class="datetime-row">
+      <div class="datetime-field">
+        <div class="datetime-label">日期</div>
+        <input type="date" class="datetime-input" id="dateInput" value="2026-05-19">
+      </div>
+      <div class="datetime-field">
+        <div class="datetime-label">时间</div>
+        <input type="time" class="datetime-input" id="timeInput" value="12:30">
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div>
+      <div class="section-title">备注（选填）</div>
+      <textarea class="notes-input" id="notesInput" placeholder="备注信息..."></textarea>
+    </div>
+  </div>
+
+  <div class="snackbar" id="snackbar"></div>
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('platform') === 'ios') document.getElementById('app').classList.add('ios');
+
+  let selectedCat = 'food';
+  let amountValue = 0;
+
+  function onAmountInput(el) {
+    const raw = el.textContent.replace(/[^0-9.]/g, '');
+    const num = parseFloat(raw);
+    if (!isNaN(num) && num > 0) {
+      amountValue = num;
+      el.classList.remove('empty');
+    } else {
+      amountValue = 0;
+      el.classList.add('empty');
+    }
+  }
+
+  function selectCat(btn) {
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedCat = btn.dataset.cat;
+  }
+
+  // Select default category
+  document.querySelector('.cat-btn[data-cat="food"]').classList.add('selected');
+
+  function doSave() {
+    if (amountValue <= 0) {
+      showSnackbar('请输入金额');
+      return;
+    }
+    showSnackbar('记录已添加');
+    setTimeout(() => { window.location.href = 'home.html'; }, 600);
+  }
+
+  function showSnackbar(msg) {
+    const sb = document.getElementById('snackbar');
+    sb.textContent = msg;
+    sb.classList.add('show');
+    setTimeout(() => sb.classList.remove('show'), 2000);
+  }
+</script>
+</body>
+</html>

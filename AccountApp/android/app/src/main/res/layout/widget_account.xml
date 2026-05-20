@@ -1,0 +1,85 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@drawable/widget_background"
+    android:padding="12dp"
+    android:gravity="center_vertical">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/widget_today_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="今日支出"
+            android:textColor="#5C6378"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/widget_today_amount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="¥0.00"
+            android:textColor="#1A1E2B"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:singleLine="true"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp" />
+
+        <TextView
+            android:id="@+id/widget_today_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0笔"
+            android:textColor="#5C6378"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="1dp"
+        android:layout_height="48dp"
+        android:layout_marginLeft="12dp"
+        android:layout_marginRight="12dp"
+        android:background="#E1E4EB" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/widget_month_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="本月累计"
+            android:textColor="#5C6378"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/widget_monthly_amount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="¥0.00"
+            android:textColor="#1EA58B"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:singleLine="true"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp" />
+
+        <TextView
+            android:id="@+id/widget_month_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0笔"
+            android:textColor="#5C6378"
+            android:textSize="11sp" />
+    </LinearLayout>
+</LinearLayout>

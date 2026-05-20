@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>桌面小组件 — VoiceLedger</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  body {
+    background: oklch(96% 0.008 240);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: var(--font-body);
+  }
+
+  .showcase {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+  }
+
+  .showcase-header {
+    text-align: center;
+  }
+  .showcase-header h1 {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--fg);
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  .showcase-header p {
+    font-size: 15px;
+    color: var(--muted);
+  }
+
+  .widgets-row {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* === Android Widget === */
+  .widget-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .widget-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .widget {
+    width: 312px;
+    background: var(--surface);
+    border-radius: 18px;
+    padding: 18px 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .widget-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  .widget-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .widget-logo {
+    width: 22px; height: 22px;
+    border-radius: 5px;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .widget-logo svg {
+    width: 13px; height: 13px;
+  }
+  .widget-app-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+  }
+
+  .widget-stats {
+    display: flex;
+    gap: 0;
+  }
+  .widget-stat {
+    flex: 1;
+  }
+  .widget-stat-value {
+    font-family: var(--font-display);
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--fg);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .widget-stat-label {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 500;
+    margin-top: 2px;
+  }
+
+  .widget-divider {
+    width: 1px;
+    background: var(--border);
+    margin: 0 16px;
+  }
+
+  .widget-recent {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  .widget-recent-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    flex-shrink: 0;
+  }
+  .widget-recent-text {
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* === iOS Widget === */
+  .widget.ios-widget {
+    width: 292px;
+    border-radius: 22px;
+    padding: 16px 18px;
+    gap: 12px;
+  }
+  .widget.ios-widget .widget-stat-value {
+    font-size: 28px;
+  }
+
+  /* === Dark variant === */
+  .widget.dark {
+    background: oklch(25% 0.015 240);
+    box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+  }
+  .widget.dark .widget-stat-value {
+    color: #fff;
+  }
+  .widget.dark .widget-stat-label,
+  .widget.dark .widget-app-name,
+  .widget.dark .widget-recent-text {
+    color: oklch(72% 0.01 250);
+  }
+  .widget.dark .widget-divider {
+    background: oklch(100% 0 0 / 0.15);
+  }
+  .widget.dark .widget-recent {
+    border-top-color: oklch(100% 0 0 / 0.1);
+  }
+
+  /* === Sizes === */
+  .widget.small {
+    width: 148px;
+    padding: 14px;
+    gap: 10px;
+  }
+  .widget.small .widget-stat-value {
+    font-size: 28px;
+  }
+  .widget.small .widget-recent {
+    display: none;
+  }
+  .widget.small .widget-stats {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .widget.small .widget-divider {
+    display: none;
+  }
+  .widget.small .widget-brand {
+    justify-content: center;
+  }
+
+  /* === Back link === */
+  .back-link {
+    margin-top: 24px;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .back-link:hover { text-decoration: underline; }
+
+  /* === Platform variants === */
+  @media (max-width: 700px) {
+    .widgets-row { flex-direction: column; align-items: center; }
+  }
+</style>
+</head>
+<body>
+<div class="showcase">
+  <div class="showcase-header">
+    <h1>桌面小组件</h1>
+    <p>长按桌面空白处 → 添加小组件 → 选择 VoiceLedger</p>
+  </div>
+
+  <div class="widgets-row">
+
+    <!-- Android — Standard -->
+    <div class="widget-wrapper">
+      <span class="widget-label">Android · 4×1</span>
+      <div class="widget">
+        <div class="widget-top">
+          <div class="widget-brand">
+            <div class="widget-logo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+                <path d="M19 9v3a7 7 0 0 1-14 0V9"/>
+                <line x1="12" y1="19" x2="12" y2="22"/>
+              </svg>
+            </div>
+            <span class="widget-app-name">VoiceLedger</span>
+          </div>
+        </div>
+        <div class="widget-stats">
+          <div class="widget-stat">
+            <div class="widget-stat-value">¥127.50</div>
+            <div class="widget-stat-label">今日支出 · 4笔</div>
+          </div>
+          <div class="widget-divider"></div>
+          <div class="widget-stat">
+            <div class="widget-stat-value">¥3,842</div>
+            <div class="widget-stat-label">本月累计 · 26笔</div>
+          </div>
+        </div>
+        <div class="widget-recent">
+          <div class="widget-recent-dot"></div>
+          <span class="widget-recent-text">最近：午餐 · 拉面 ¥35.00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- iOS — Medium -->
+    <div class="widget-wrapper">
+      <span class="widget-label">iOS · Medium</span>
+      <div class="widget ios-widget">
+        <div class="widget-top">
+          <div class="widget-brand">
+            <div class="widget-logo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+                <path d="M19 9v3a7 7 0 0 1-14 0V9"/>
+                <line x1="12" y1="19" x2="12" y2="22"/>
+              </svg>
+            </div>
+            <span class="widget-app-name">VoiceLedger</span>
+          </div>
+        </div>
+        <div class="widget-stats">
+          <div class="widget-stat">
+            <div class="widget-stat-value">¥127.50</div>
+            <div class="widget-stat-label">今日支出 · 4笔</div>
+          </div>
+          <div class="widget-divider"></div>
+          <div class="widget-stat">
+            <div class="widget-stat-value">¥3,842</div>
+            <div class="widget-stat-label">本月累计 · 26笔</div>
+          </div>
+        </div>
+        <div class="widget-recent">
+          <div class="widget-recent-dot"></div>
+          <span class="widget-recent-text">最近：午餐 · 拉面 ¥35.00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Android — Small -->
+    <div class="widget-wrapper">
+      <span class="widget-label">Android · 2×1</span>
+      <div class="widget small">
+        <div class="widget-brand">
+          <div class="widget-logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+              <path d="M19 9v3a7 7 0 0 1-14 0V9"/>
+              <line x1="12" y1="19" x2="12" y2="22"/>
+            </svg>
+          </div>
+          <span class="widget-app-name">VoiceLedger</span>
+        </div>
+        <div class="widget-stats">
+          <div class="widget-stat">
+            <div class="widget-stat-value">¥127.50</div>
+            <div class="widget-stat-label">今日支出 · 4笔</div>
+          </div>
+          <div class="widget-stat">
+            <div class="widget-stat-value">¥3,842</div>
+            <div class="widget-stat-label">本月累计 · 26笔</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dark variant -->
+    <div class="widget-wrapper">
+      <span class="widget-label">Android · 深色</span>
+      <div class="widget dark">
+        <div class="widget-top">
+          <div class="widget-brand">
+            <div class="widget-logo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+                <path d="M19 9v3a7 7 0 0 1-14 0V9"/>
+                <line x1="12" y1="19" x2="12" y2="22"/>
+              </svg>
+            </div>
+            <span class="widget-app-name">VoiceLedger</span>
+          </div>
+        </div>
+        <div class="widget-stats">
+          <div class="widget-stat">
+            <div class="widget-stat-value">¥127.50</div>
+            <div class="widget-stat-label">今日支出 · 4笔</div>
+          </div>
+          <div class="widget-divider"></div>
+          <div class="widget-stat">
+            <div class="widget-stat-value">¥3,842</div>
+            <div class="widget-stat-label">本月累计 · 26笔</div>
+          </div>
+        </div>
+        <div class="widget-recent">
+          <div class="widget-recent-dot"></div>
+          <span class="widget-recent-text">最近：午餐 · 拉面 ¥35.00</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <a href="../index.html" class="back-link">← 返回启动页</a>
+</div>
+</body>
+</html>

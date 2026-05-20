@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VoiceLedger — 语音记账原型</title>
+<link rel="stylesheet" href="css/tokens.css">
+<style>
+  .launcher {
+    min-height: 100vh;
+    background: var(--bg);
+    padding: 48px var(--space-lg);
+  }
+  .launcher-header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .launcher-header h1 {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 700;
+    color: var(--fg);
+    letter-spacing: -0.02em;
+    margin-bottom: var(--space-sm);
+  }
+  .launcher-header p {
+    color: var(--muted);
+    font-size: 16px;
+  }
+  .platform-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: var(--space-xl);
+    max-width: 960px;
+    margin: 0 auto 64px;
+  }
+  .platform-col {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+  }
+  .platform-col h2 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--fg);
+    text-align: center;
+    margin-bottom: var(--space-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+  }
+  .platform-badge {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+  }
+  .platform-badge.android { background: oklch(92% 0.04 160); color: oklch(40% 0.08 160); }
+  .platform-badge.ios { background: oklch(92% 0.03 255); color: oklch(40% 0.08 255); }
+  .screen-links {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+  .screen-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: 14px var(--space-md);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    color: var(--fg);
+    font-size: 15px;
+    font-weight: 500;
+    transition: all var(--duration-fast) var(--ease-out);
+  }
+  .screen-link:hover {
+    border-color: var(--accent);
+    background: var(--accent-pale);
+    transform: translateX(4px);
+  }
+  .screen-link-icon {
+    width: 40px; height: 40px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .screen-link-icon.home { background: oklch(93% 0.025 170); color: var(--accent); }
+  .screen-link-icon.voice { background: oklch(93% 0.03 350); color: oklch(50% 0.16 350); }
+  .screen-link-icon.manual { background: oklch(93% 0.03 255); color: oklch(50% 0.16 255); }
+  .screen-link-icon.image { background: oklch(93% 0.03 75); color: oklch(55% 0.16 75); }
+  .screen-link-icon.all { background: oklch(93% 0.025 160); color: oklch(45% 0.10 160); }
+  .screen-link-icon.settings { background: oklch(93% 0.01 260); color: oklch(45% 0.04 260); }
+  .screen-link-label {
+    display: flex;
+    flex-direction: column;
+  }
+  .screen-link-label span:first-child {
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .screen-link-label span:last-child {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .footer-note {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: var(--space-xl);
+  }
+  .footer-note a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+  }
+</style>
+</head>
+<body>
+<div class="launcher">
+  <div class="launcher-header">
+    <h1>VoiceLedger</h1>
+    <p>说出来，就记好了 — 语音记账应用原型 · Android &amp; iOS</p>
+  </div>
+  <div class="platform-grid">
+    <!-- Android -->
+    <div class="platform-col">
+      <h2><span class="platform-badge android">Android</span> Pixel 7</h2>
+      <div class="screen-links">
+        <a class="screen-link" href="screens/home.html?platform=android">
+          <div class="screen-link-icon home">&#x1F3E0;</div>
+          <div class="screen-link-label"><span>首页</span><span>汇总卡片 + 记录列表 + 底部导航</span></div>
+        </a>
+        <a class="screen-link" href="screens/voice-record.html?platform=android">
+          <div class="screen-link-icon voice">&#x1F399;</div>
+          <div class="screen-link-label"><span>语音录音</span><span>长按录音 · 波形动画 · 全屏遮罩</span></div>
+        </a>
+        <a class="screen-link" href="screens/manual-entry.html?platform=android">
+          <div class="screen-link-icon manual">&#x270F;</div>
+          <div class="screen-link-label"><span>手动记账</span><span>金额 · 分类网格 · 日期时间 · 备注</span></div>
+        </a>
+        <a class="screen-link" href="screens/image-confirm.html?platform=android">
+          <div class="screen-link-icon image">&#x1F4F7;</div>
+          <div class="screen-link-label"><span>识图确认</span><span>多笔识别 · 逐条编辑 · 批量添加</span></div>
+        </a>
+        <a class="screen-link" href="screens/all-records.html?platform=android">
+          <div class="screen-link-icon all">&#x1F4CB;</div>
+          <div class="screen-link-label"><span>全部记录</span><span>按天分组 · 完整列表</span></div>
+        </a>
+        <a class="screen-link" href="screens/settings.html?platform=android">
+          <div class="screen-link-icon settings">&#x2699;</div>
+          <div class="screen-link-label"><span>设置</span><span>账号 · 通知 · 外观 · 数据</span></div>
+        </a>
+      </div>
+    </div>
+    <!-- iOS -->
+    <div class="platform-col">
+      <h2><span class="platform-badge ios">iOS</span> iPhone 15 Pro</h2>
+      <div class="screen-links">
+        <a class="screen-link" href="screens/home.html?platform=ios">
+          <div class="screen-link-icon home">&#x1F3E0;</div>
+          <div class="screen-link-label"><span>首页</span><span>汇总卡片 + 记录列表 + 底部导航</span></div>
+        </a>
+        <a class="screen-link" href="screens/voice-record.html?platform=ios">
+          <div class="screen-link-icon voice">&#x1F399;</div>
+          <div class="screen-link-label"><span>语音录音</span><span>长按录音 · 波形动画 · 全屏遮罩</span></div>
+        </a>
+        <a class="screen-link" href="screens/manual-entry.html?platform=ios">
+          <div class="screen-link-icon manual">&#x270F;</div>
+          <div class="screen-link-label"><span>手动记账</span><span>金额 · 分类网格 · 日期时间 · 备注</span></div>
+        </a>
+        <a class="screen-link" href="screens/image-confirm.html?platform=ios">
+          <div class="screen-link-icon image">&#x1F4F7;</div>
+          <div class="screen-link-label"><span>识图确认</span><span>多笔识别 · 逐条编辑 · 批量添加</span></div>
+        </a>
+        <a class="screen-link" href="screens/all-records.html?platform=ios">
+          <div class="screen-link-icon all">&#x1F4CB;</div>
+          <div class="screen-link-label"><span>全部记录</span><span>按天分组 · 完整列表</span></div>
+        </a>
+        <a class="screen-link" href="screens/settings.html?platform=ios">
+          <div class="screen-link-icon settings">&#x2699;</div>
+          <div class="screen-link-label"><span>设置</span><span>账号 · 通知 · 外观 · 数据</span></div>
+        </a>
+      </div>
+    </div>
+  </div>
+  <p class="footer-note">每个屏幕都响应 <code>?platform=android|ios</code> 参数，自动切换设备框架样式 &middot; <a href="landing.html">查看落地页</a></p>
+</div>
+</body>
+</html>

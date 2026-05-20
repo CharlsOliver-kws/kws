@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter --version)",
+      "Bash(where emulator *)",
+      "Bash(echo \"EXIT_CODE=$?\")",
+      "Bash(Get-ChildItem \"C:\\\\Users\\\\kws\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--myfirstapp\\\\e11a0a51-2959-4b2e-b75c-82d7257300d9\\\\tasks\\\\bochfl8ui.output\")",
+      "Bash(ls \"D:/flutter/flutter/bin/\" 2>&1 | head -20)",
+      "Read(//d/flutter/flutter/bin/**)",
+      "PowerShell(& \"D:\\\\flutter\\\\flutter\\\\bin\\\\dart.bat\" --version 2>&1)",
+      "PowerShell([Environment]::GetEnvironmentVariable\\('Path', 'Machine'\\) -split ';' | ForEach-Object { $_.Trim\\(\\) } | Select-String -Pattern 'flutter' -SimpleMatch 2>&1)",
+      "Bash(export PATH=\"/d/flutter/flutter/bin:$PATH\")",
+      "PowerShell(& \"C:\\\\Users\\\\kws\\\\AppData\\\\Local\\\\Android\\\\sdk\\\\platform-tools\\\\adb.exe\" devices 2>&1)",
+      "Read(//c/Users/kws/AppData/Local/Android/sdk/emulator/**)",
+      "Read(//c/Users/kws/AppData/Local/Android/sdk/**)",
+      "Read(//c/Users/kws/.android/avd/**)",
+      "PowerShell(& \"D:\\\\flutter\\\\flutter\\\\bin\\\\flutter.bat\" devices 2>&1)"
+    ]
+  }
+}

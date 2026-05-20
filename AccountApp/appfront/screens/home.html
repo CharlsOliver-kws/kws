@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>首页 — VoiceLedger</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  /* === App Shell === */
+  .app {
+    max-width: 412px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--bg);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* === App Bar === */
+  .app-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px var(--space-md);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .app-bar-left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+  .app-bar-icon {
+    width: 32px; height: 32px;
+    border-radius: var(--radius-sm);
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .app-bar-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--fg);
+  }
+  .app-bar-action {
+    width: 40px; height: 40px;
+    border: none;
+    background: transparent;
+    color: var(--fg);
+    font-size: 20px;
+    cursor: pointer;
+    border-radius: var(--radius-full);
+    display: flex; align-items: center; justify-content: center;
+    transition: background var(--duration-fast);
+  }
+  .app-bar-action:hover { background: var(--accent-pale); }
+
+  /* === Content === */
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-md);
+    padding-bottom: 100px; /* space for bottom bar */
+  }
+
+  /* === Summary Card === */
+  .summary-card {
+    background: var(--fg);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    color: var(--surface);
+    margin-bottom: var(--space-lg);
+    position: relative;
+    overflow: hidden;
+  }
+  .summary-card::after {
+    content: '';
+    position: absolute;
+    top: -20%; right: -10%;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    background: oklch(56% 0.12 170 / 0.25);
+    filter: blur(30px);
+  }
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .summary-item {
+    flex: 1;
+  }
+  .summary-label {
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0.7;
+    margin-bottom: 4px;
+  }
+  .summary-value {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .summary-value.monthly {
+    font-size: 24px;
+    opacity: 0.85;
+  }
+  .summary-divider {
+    width: 1px;
+    height: 48px;
+    background: oklch(100% 0 0 / 0.2);
+    margin: 0 var(--space-md);
+    flex-shrink: 0;
+  }
+
+  /* === Record List === */
+  .record-section {
+    margin-bottom: var(--space-md);
+  }
+  .record-date-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-sm) 0;
+    margin-bottom: var(--space-sm);
+  }
+  .record-date {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  .record-count {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .record-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: 12px var(--space-md);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-sm);
+    cursor: pointer;
+    transition: all var(--duration-fast);
+  }
+  .record-item:hover {
+    border-color: var(--accent);
+    transform: translateX(2px);
+  }
+  .record-icon {
+    width: 40px; height: 40px;
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .record-icon.food { background: oklch(92% 0.08 45); color: var(--cat-food); }
+  .record-icon.transport { background: oklch(92% 0.08 250); color: var(--cat-transport); }
+  .record-icon.shopping { background: oklch(92% 0.08 300); color: var(--cat-shopping); }
+  .record-icon.entertain { background: oklch(92% 0.08 350); color: var(--cat-entertain); }
+  .record-icon.medical { background: oklch(92% 0.09 15); color: var(--cat-medical); }
+  .record-icon.education { background: oklch(92% 0.07 160); color: var(--cat-education); }
+  .record-icon.housing { background: oklch(92% 0.05 70); color: var(--cat-housing); }
+  .record-icon.other { background: oklch(92% 0.01 260); color: var(--cat-other); }
+  .record-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .record-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--fg);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .record-time {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .record-amount {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--fg);
+    white-space: nowrap;
+  }
+
+  /* === View More === */
+  .view-more {
+    display: block;
+    text-align: center;
+    padding: 12px;
+    color: var(--accent);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    margin-top: var(--space-sm);
+  }
+  .view-more:hover { text-decoration: underline; }
+
+  /* === Empty State === */
+  .empty-state {
+    text-align: center;
+    padding: 60px var(--space-lg);
+  }
+  .empty-icon {
+    font-size: 48px;
+    margin-bottom: var(--space-md);
+    opacity: 0.5;
+  }
+  .empty-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--fg);
+    margin-bottom: var(--space-xs);
+  }
+  .empty-desc {
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  /* === Bottom Bar === */
+  .bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 412px;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: 12px var(--space-md) 20px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    z-index: 10;
+  }
+  .bottom-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px;
+    border: none;
+    background: none;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color var(--duration-fast);
+  }
+  .bottom-btn:hover, .bottom-btn:active {
+    color: var(--fg);
+  }
+  .bottom-btn-icon {
+    width: 44px; height: 44px;
+    border-radius: var(--radius-full);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    transition: all var(--duration-fast);
+  }
+  .bottom-btn.records .bottom-btn-icon { background: var(--accent-pale); color: var(--accent); }
+  .bottom-btn.voice .bottom-btn-icon {
+    width: 56px; height: 56px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: var(--radius-full);
+    font-size: 26px;
+    box-shadow: 0 4px 16px oklch(56% 0.12 170 / 0.4);
+  }
+  .bottom-btn.voice:active .bottom-btn-icon {
+    transform: scale(0.95);
+    background: oklch(48% 0.10 170);
+  }
+  .bottom-btn.image .bottom-btn-icon { background: oklch(92% 0.03 75); color: oklch(55% 0.16 75); }
+  .bottom-btn.settings .bottom-btn-icon { background: oklch(92% 0.01 260); color: oklch(45% 0.04 260); }
+
+  /* === Platform Variants === */
+  .app.ios .app-bar {
+    padding-top: 48px; /* status bar */
+  }
+  .app.ios .bottom-bar {
+    padding-bottom: 34px; /* home indicator */
+  }
+
+  /* === Swipe delete === */
+  .record-item-wrapper {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: var(--space-sm);
+  }
+  .swipe-delete {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 80px;
+    background: var(--danger);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    transform: translateX(100%);
+    transition: transform var(--duration-normal);
+  }
+  .record-item-wrapper.swiped .swipe-delete {
+    transform: translateX(0);
+  }
+  .record-item-wrapper.swiped .record-item {
+    transform: translateX(-60px);
+  }
+
+  /* === Dialog === */
+  .dialog-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--duration-normal);
+  }
+  .dialog-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+  .dialog {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    width: 90%;
+    max-width: 320px;
+    text-align: center;
+    transform: translateY(20px);
+    transition: transform var(--duration-normal);
+  }
+  .dialog-overlay.open .dialog {
+    transform: translateY(0);
+  }
+  .dialog h3 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--fg);
+    margin-bottom: var(--space-sm);
+  }
+  .dialog p {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: var(--space-lg);
+  }
+  .dialog-actions {
+    display: flex;
+    gap: var(--space-sm);
+  }
+  .dialog-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .dialog-btn.cancel {
+    background: var(--bg);
+    color: var(--muted);
+  }
+  .dialog-btn.confirm {
+    background: var(--danger);
+    color: #fff;
+  }
+
+  /* === SnackBar === */
+  .snackbar {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--fg);
+    color: var(--surface);
+    padding: 12px 24px;
+    border-radius: var(--radius-full);
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0;
+    transition: all var(--duration-normal) var(--ease-out);
+    z-index: 200;
+    white-space: nowrap;
+  }
+  .snackbar.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <!-- App Bar -->
+  <div class="app-bar">
+    <div class="app-bar-left">
+      <div class="app-bar-icon">V</div>
+      <span class="app-bar-title">VoiceLedger</span>
+    </div>
+    <button class="app-bar-action" onclick="openManualEntry()" aria-label="手动记账">+</button>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+    <!-- Summary Card -->
+    <div class="summary-card">
+      <div class="summary-row">
+        <div class="summary-item">
+          <div class="summary-label">今日支出</div>
+          <div class="summary-value">¥<span id="today-total">127.50</span></div>
+        </div>
+        <div class="summary-divider"></div>
+        <div class="summary-item">
+          <div class="summary-label">本月累计</div>
+          <div class="summary-value monthly">¥<span id="monthly-total">3,842.00</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Records -->
+    <div id="record-list">
+      <!-- Today -->
+      <div class="record-section">
+        <div class="record-date-header">
+          <span class="record-date">今天</span>
+          <span class="record-count">4笔 · ¥127.50</span>
+        </div>
+        <div class="record-item" onclick="recordClick(this)">
+          <div class="record-icon food">&#x1F37D;</div>
+          <div class="record-info">
+            <div class="record-title">午餐 · 拉面</div>
+            <div class="record-time">12:30</div>
+          </div>
+          <div class="record-amount">¥35.00</div>
+        </div>
+        <div class="record-item" onclick="recordClick(this)">
+          <div class="record-icon transport">&#x1F687;</div>
+          <div class="record-info">
+            <div class="record-title">地铁通勤</div>
+            <div class="record-time">09:15</div>
+          </div>
+          <div class="record-amount">¥7.50</div>
+        </div>
+        <div class="record-item" onclick="recordClick(this)">
+          <div class="record-icon food">&#x2615;</div>
+          <div class="record-info">
+            <div class="record-title">星巴克咖啡</div>
+            <div class="record-time">08:30</div>
+          </div>
+          <div class="record-amount">¥35.00</div>
+        </div>
+        <div class="record-item" onclick="recordClick(this)">
+          <div class="record-icon transport">&#x1F695;</div>
+          <div class="record-info">
+            <div class="record-title">打车回家</div>
+            <div class="record-time">00:15</div>
+          </div>
+          <div class="record-amount">¥50.00</div>
+        </div>
+      </div>
+
+      <!-- Yesterday -->
+      <div class="record-section">
+        <div class="record-date-header">
+          <span class="record-date">昨天</span>
+          <span class="record-count">3笔 · ¥256.00</span>
+        </div>
+        <div class="record-item" onclick="recordClick(this)">
+          <div class="record-icon shopping">&#x1F6CD;</div>
+          <div class="record-info">
+            <div class="record-title">超市采购</div>
+            <div class="record-time">19:45</div>
+          </div>
+          <div class="record-amount">¥156.00</div>
+        </div>
+        <div class="record-item" onclick="recordClick(this)">
+          <div class="record-icon entertain">&#x1F3AC;</div>
+          <div class="record-info">
+            <div class="record-title">电影票</div>
+            <div class="record-time">15:20</div>
+          </div>
+          <div class="record-amount">¥50.00</div>
+        </div>
+        <div class="record-item" onclick="recordClick(this)">
+          <div class="record-icon food">&#x1F37D;</div>
+          <div class="record-info">
+            <div class="record-title">晚餐</div>
+            <div class="record-time">12:00</div>
+          </div>
+          <div class="record-amount">¥50.00</div>
+        </div>
+      </div>
+
+      <!-- May 17 -->
+      <div class="record-section">
+        <div class="record-date-header">
+          <span class="record-date">5月17日 星期五</span>
+          <span class="record-count">2笔 · ¥89.00</span>
+        </div>
+        <div class="record-item" onclick="recordClick(this)">
+          <div class="record-icon education">&#x1F4DA;</div>
+          <div class="record-info">
+            <div class="record-title">书店购书</div>
+            <div class="record-time">16:30</div>
+          </div>
+          <div class="record-amount">¥89.00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- View More -->
+    <a href="all-records.html" class="view-more">查看全部记录 →</a>
+  </div>
+
+  <!-- Bottom Bar -->
+  <div class="bottom-bar">
+    <a href="all-records.html" class="bottom-btn records">
+      <div class="bottom-btn-icon">&#x1F4CB;</div>
+      <span>记录</span>
+    </a>
+    <button class="bottom-btn voice" id="voiceBtn" aria-label="语音记账">
+      <div class="bottom-btn-icon">&#x1F399;</div>
+      <span>语音</span>
+    </button>
+    <button class="bottom-btn image" onclick="openImageConfirm()" aria-label="识图记账">
+      <div class="bottom-btn-icon">&#x1F4F7;</div>
+      <span>识图</span>
+    </button>
+    <a href="settings.html" class="bottom-btn settings">
+      <div class="bottom-btn-icon">&#x2699;</div>
+      <span>设置</span>
+    </a>
+  </div>
+</div>
+
+<!-- Delete Confirmation Dialog -->
+<div class="dialog-overlay" id="deleteDialog">
+  <div class="dialog">
+    <h3>确认删除</h3>
+    <p>此操作不可撤销，确定要删除这条记录吗？</p>
+    <div class="dialog-actions">
+      <button class="dialog-btn cancel" onclick="closeDialog()">取消</button>
+      <button class="dialog-btn confirm" onclick="confirmDelete()">删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- SnackBar -->
+<div class="snackbar" id="snackbar"></div>
+
+<script>
+  // Platform detection
+  const params = new URLSearchParams(window.location.search);
+  const platform = params.get('platform') || 'android';
+  if (platform === 'ios') {
+    document.getElementById('app').classList.add('ios');
+  }
+
+  // Swipe to delete
+  let currentSwipeItem = null;
+  document.querySelectorAll('.record-item').forEach(item => {
+    let startX = 0;
+    let currentX = 0;
+    item.addEventListener('touchstart', e => {
+      startX = e.touches[0].clientX;
+    });
+    item.addEventListener('touchmove', e => {
+      currentX = e.touches[0].clientX;
+      const diff = startX - currentX;
+      if (diff > 60) {
+        item.closest('.record-item').style.transform = 'translateX(-60px)';
+      }
+    });
+    item.addEventListener('touchend', () => {
+      const diff = startX - currentX;
+      if (diff > 60) {
+        currentSwipeItem = item;
+        item.style.transform = 'translateX(-60px)';
+        item.style.transition = 'transform 0.2s';
+      } else {
+        item.style.transform = '';
+      }
+    });
+  });
+
+  // Voice button - long press
+  let voiceTimer = null;
+  const voiceBtn = document.getElementById('voiceBtn');
+  voiceBtn.addEventListener('mousedown', () => {
+    voiceTimer = setTimeout(() => {
+      window.location.href = 'voice-record.html';
+    }, 300);
+  });
+  voiceBtn.addEventListener('mouseup', () => clearTimeout(voiceTimer));
+  voiceBtn.addEventListener('mouseleave', () => clearTimeout(voiceTimer));
+
+  // Record click
+  function recordClick(el) {
+    // Reserved for future detail view
+  }
+
+  // Manual entry
+  function openManualEntry() {
+    window.location.href = 'manual-entry.html';
+  }
+
+  // Image confirm
+  function openImageConfirm() {
+    window.location.href = 'image-confirm.html';
+  }
+
+  // Dialog
+  function closeDialog() {
+    document.getElementById('deleteDialog').classList.remove('open');
+  }
+  function confirmDelete() {
+    if (currentSwipeItem) {
+      currentSwipeItem.closest('.record-item').remove();
+      showSnackbar('记录已删除');
+    }
+    closeDialog();
+  }
+
+  // SnackBar
+  function showSnackbar(msg) {
+    const sb = document.getElementById('snackbar');
+    sb.textContent = msg;
+    sb.classList.add('show');
+    setTimeout(() => sb.classList.remove('show'), 2000);
+  }
+</script>
+</body>
+</html>

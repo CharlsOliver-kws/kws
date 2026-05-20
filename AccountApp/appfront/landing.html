@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VoiceLedger — 说出来，就记好</title>
+<link rel="stylesheet" href="css/tokens.css">
+<style>
+/* === Landing Page Styles === */
+
+/* Hero */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 80px var(--space-lg) 120px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 30%, oklch(92% 0.03 255 / 0.5), transparent),
+    radial-gradient(ellipse 60% 50% at 80% 70%, oklch(65% 0.12 30 / 0.12), transparent);
+  pointer-events: none;
+}
+.hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent-pale);
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  margin-bottom: var(--space-lg);
+}
+.hero-badge-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.4); }
+}
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 7vw, 72px);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  color: var(--fg);
+  margin-bottom: var(--space-lg);
+}
+.hero h1 em {
+  font-style: normal;
+  color: var(--accent);
+}
+.hero p {
+  font-size: clamp(17px, 2.5vw, 21px);
+  color: var(--muted);
+  line-height: 1.6;
+  max-width: 540px;
+  margin: 0 auto var(--space-xl);
+}
+.hero-actions {
+  display: flex;
+  gap: var(--space-md);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 600;
+  padding: 14px 28px;
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  text-decoration: none;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 4px 20px oklch(58% 0.18 255 / 0.35);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px oklch(58% 0.18 255 / 0.45);
+}
+.btn-outline {
+  background: var(--surface);
+  color: var(--fg);
+  border: 1.5px solid var(--border);
+}
+.btn-outline:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Floating device preview */
+.hero-devices {
+  position: relative;
+  margin-top: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(16px, 4vw, 40px);
+}
+.device-preview {
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  background: var(--surface);
+}
+.device-preview.android {
+  width: clamp(200px, 25vw, 300px);
+  aspect-ratio: 412/900;
+}
+.device-preview.ios {
+  width: clamp(200px, 25vw, 300px);
+  aspect-ratio: 390/844;
+}
+.device-preview-inner {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Sections */
+.section {
+  padding: 100px var(--space-lg);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.section-label {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  margin-bottom: var(--space-md);
+}
+.section h2 {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+  margin-bottom: var(--space-md);
+}
+.section p.lead {
+  font-size: 18px;
+  color: var(--muted);
+  line-height: 1.6;
+  max-width: 600px;
+}
+
+/* Features grid */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-lg);
+  margin-top: 64px;
+}
+.feature-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  transition: all var(--duration-normal) var(--ease-out);
+}
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+.feature-icon {
+  width: 52px; height: 52px;
+  border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  margin-bottom: var(--space-lg);
+  color: #fff;
+}
+.feature-icon.voice { background: oklch(58% 0.18 255); }
+.feature-icon.scan { background: oklch(65% 0.18 30); }
+.feature-icon.manual { background: oklch(55% 0.14 160); }
+.feature-icon.smart { background: oklch(55% 0.16 300); }
+.feature-card h3 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--fg);
+  margin-bottom: var(--space-sm);
+}
+.feature-card p {
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* Stats bar */
+.stats-bar {
+  background: var(--fg);
+  color: var(--surface);
+  padding: 64px var(--space-lg);
+  text-align: center;
+}
+.stats-bar-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-xl);
+}
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+}
+.stat-number {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--accent);
+}
+.stat-label {
+  font-size: 15px;
+  color: oklch(75% 0.01 250);
+  font-weight: 500;
+}
+
+/* How it works */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-lg);
+  margin-top: 64px;
+}
+.step-card {
+  text-align: center;
+  padding: var(--space-xl);
+}
+.step-number {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: var(--accent-pale);
+  color: var(--accent);
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto var(--space-md);
+}
+.step-card h3 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--fg);
+  margin-bottom: var(--space-sm);
+}
+.step-card p {
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* Showcase */
+.showcase {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.showcase-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 100px var(--space-lg);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+.showcase-text h2 {
+  margin-bottom: var(--space-lg);
+}
+.showcase-text ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+.showcase-text li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  font-size: 16px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.showcase-text li::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+  margin-top: 9px;
+}
+.showcase-mockup {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-md);
+}
+.showcase-phone {
+  width: 180px;
+  aspect-ratio: 390/844;
+  border-radius: var(--radius-xl);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+}
+
+/* CTA */
+.cta-section {
+  text-align: center;
+  padding: 120px var(--space-lg);
+  position: relative;
+  overflow: hidden;
+}
+.cta-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 60% at 50% 50%, oklch(92% 0.03 255 / 0.4), transparent);
+  pointer-events: none;
+}
+.cta-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.cta-inner h2 {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+  margin-bottom: var(--space-md);
+}
+.cta-inner p {
+  font-size: 18px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: var(--space-xl);
+}
+.store-badges {
+  display: flex;
+  gap: var(--space-md);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.store-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--fg);
+  color: var(--surface);
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+.store-badge:hover {
+  background: var(--accent);
+  transform: translateY(-2px);
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: var(--space-xl) var(--space-lg);
+  color: var(--muted);
+  font-size: 14px;
+  border-top: 1px solid var(--border);
+}
+.footer-links {
+  display: flex;
+  gap: var(--space-lg);
+  justify-content: center;
+  margin-bottom: var(--space-md);
+}
+.footer-links a {
+  color: var(--muted);
+  text-decoration: none;
+}
+.footer-links a:hover { color: var(--fg); }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .showcase-inner {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .showcase-mockup { display: none; }
+  .hero-devices { flex-direction: column; gap: 20px; }
+  .device-preview { width: 200px; }
+  .section { padding: 64px var(--space-md); }
+}
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      语音记账 · 全球可用
+    </div>
+    <h1>说出来，<br>就<em>记好</em>了</h1>
+    <p>VoiceLedger 用语音识别和 AI 解析，让你说句话就能记一笔账。支持中文、英文等 20+ 语言，面向全球用户。</p>
+    <div class="hero-actions">
+      <a href="#" class="btn btn-primary">免费开始使用</a>
+      <a href="#features" class="btn btn-outline">了解更多</a>
+    </div>
+    <div class="hero-devices">
+      <div class="device-preview android">
+        <div class="device-preview-inner">Android 预览</div>
+      </div>
+      <div class="device-preview ios">
+        <div class="device-preview-inner">iOS 预览</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="section" id="features">
+  <div class="section-label">核心功能</div>
+  <h2>三种方式，一秒记账</h2>
+  <p class="lead">不管你是说话、拍照还是手动输入，VoiceLedger 都能快速准确地帮你完成记录。</p>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon voice">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      </div>
+      <h3>语音记账</h3>
+      <p>长按说话，松开完成。AI 自动解析金额、分类和备注。支持普通话、英语、粤语、日语等 20+ 语言。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon scan">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      </div>
+      <h3>拍照识图</h3>
+      <p>拍一张账单、收据或截图，视觉大模型自动识别金额和项目，支持多笔同时识别。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon manual">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </div>
+      <h3>手动记账</h3>
+      <p>8 大分类一目了然，金额、日期、时间、备注一应俱全，补记改记同样方便。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon smart">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <h3>智能统计</h3>
+      <p>今日支出、本月累计一目了然，按天分组展示，所有数据本地存储，隐私安全。</p>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<div class="stats-bar">
+  <div class="stats-bar-inner">
+    <div class="stat-item">
+      <span class="stat-number">50K+</span>
+      <span class="stat-label">全球用户</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">20+</span>
+      <span class="stat-label">支持语言</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">&lt;3s</span>
+      <span class="stat-label">平均记账耗时</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">8</span>
+      <span class="stat-label">支出分类</span>
+    </div>
+  </div>
+</div>
+
+<!-- How it works -->
+<section class="section">
+  <div class="section-label">使用流程</div>
+  <h2>三步开始记账</h2>
+  <div class="steps">
+    <div class="step-card">
+      <div class="step-number">1</div>
+      <h3>长按说话</h3>
+      <p>按住底部"语音"按钮，说出你的消费。比如"今天午饭花了 35 块"。</p>
+    </div>
+    <div class="step-card">
+      <div class="step-number">2</div>
+      <h3>AI 自动解析</h3>
+      <p>语音转文字后，AI 模型自动提取金额、分类和备注，你无需手动选择。</p>
+    </div>
+    <div class="step-card">
+      <div class="step-number">3</div>
+      <h3>即刻入账</h3>
+      <p>记录保存到本地数据库，首页汇总卡片和列表实时刷新，一切自动完成。</p>
+    </div>
+  </div>
+</section>
+
+<!-- Showcase -->
+<section class="showcase">
+  <div class="showcase-inner">
+    <div class="showcase-text">
+      <h2>为全球用户设计</h2>
+      <ul>
+        <li>支持中文、English、日本語、한국어 等 20+ 语言语音识别</li>
+        <li>多币种智能识别 — ¥、$、€、£、¥、₩ 自动标注</li>
+        <li>深色/浅色主题自由切换，跟随系统或手动选择</li>
+        <li>所有数据本地存储，不上传服务器，隐私无忧</li>
+        <li>桌面小组件 + 锁屏通知，瞥一眼就知道今天花了多少</li>
+      </ul>
+    </div>
+    <div class="showcase-mockup">
+      <div class="showcase-phone"></div>
+      <div class="showcase-phone"></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-inner">
+    <h2>说句话，账就记好了</h2>
+    <p>VoiceLedger 让记账变得像说话一样简单。支持 Android 和 iOS，即将上线各大应用商店。</p>
+    <div class="store-badges">
+      <a href="#" class="store-badge">Google Play</a>
+      <a href="#" class="store-badge">App Store</a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-links">
+    <a href="#">隐私政策</a>
+    <a href="#">使用条款</a>
+    <a href="#">帮助中心</a>
+    <a href="#">联系我们</a>
+  </div>
+  <p>VoiceLedger © 2026. 说出你的消费，让 AI 帮你记住。</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>识图确认 — VoiceLedger</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  .app {
+    max-width: 412px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+  }
+  .app-bar {
+    display: flex;
+    align-items: center;
+    padding: 16px var(--space-md);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    gap: var(--space-md);
+  }
+  .back-btn {
+    width: 40px; height: 40px;
+    border: none; background: none;
+    font-size: 20px; cursor: pointer;
+    border-radius: var(--radius-full);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--fg);
+  }
+  .back-btn:hover { background: var(--accent-pale); }
+  .app-bar-title {
+    font-family: var(--font-display);
+    font-size: 18px; font-weight: 600; color: var(--fg);
+    flex: 1;
+  }
+  .confirm-btn {
+    padding: 8px 16px;
+    border: none; border-radius: var(--radius-full);
+    background: var(--accent); color: #fff;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: all var(--duration-fast);
+  }
+  .confirm-btn:hover { transform: translateY(-1px); }
+
+  .content {
+    flex: 1;
+    padding: var(--space-lg) var(--space-md);
+    overflow-y: auto;
+  }
+
+  .result-header {
+    text-align: center;
+    margin-bottom: var(--space-lg);
+  }
+  .result-header h2 {
+    font-family: var(--font-display);
+    font-size: 20px; font-weight: 600; color: var(--fg);
+    margin-bottom: var(--space-xs);
+  }
+  .result-header p {
+    font-size: 14px; color: var(--muted);
+  }
+
+  .detected-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-xl);
+  }
+  .detected-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    transition: border-color var(--duration-fast);
+  }
+  .detected-item:hover { border-color: var(--accent); }
+  .detected-icon {
+    width: 36px; height: 36px;
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .detected-icon.food { background: oklch(92% 0.08 45); color: var(--cat-food); }
+  .detected-icon.shopping { background: oklch(92% 0.08 300); color: var(--cat-shopping); }
+  .detected-icon.entertain { background: oklch(92% 0.08 350); color: var(--cat-entertain); }
+  .detected-info { flex: 1; min-width: 0; }
+  .detected-title {
+    font-size: 15px; font-weight: 500; color: var(--fg);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .detected-meta {
+    font-size: 12px; color: var(--muted); margin-top: 2px;
+  }
+  .detected-amount {
+    font-family: var(--font-display);
+    font-size: 16px; font-weight: 600; color: var(--fg);
+    white-space: nowrap;
+  }
+  .detected-actions {
+    display: flex; gap: 4px;
+  }
+  .detected-action-btn {
+    width: 32px; height: 32px;
+    border: none; background: none;
+    font-size: 14px; cursor: pointer;
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted);
+    transition: all var(--duration-fast);
+  }
+  .detected-action-btn:hover { background: var(--accent-pale); color: var(--fg); }
+  .detected-action-btn.delete:hover { background: oklch(92% 0.10 20); color: var(--danger); }
+
+  .total-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-lg);
+    background: var(--fg);
+    border-radius: var(--radius-md);
+    color: var(--surface);
+  }
+  .total-label {
+    font-size: 14px; font-weight: 500; opacity: 0.7;
+  }
+  .total-value {
+    font-family: var(--font-display);
+    font-size: 28px; font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  /* Edit panel */
+  .edit-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex; align-items: flex-end;
+    z-index: 100;
+    opacity: 0; pointer-events: none;
+    transition: opacity var(--duration-normal);
+  }
+  .edit-overlay.open {
+    opacity: 1; pointer-events: all;
+  }
+  .edit-panel {
+    width: 100%;
+    max-width: 412px;
+    margin: 0 auto;
+    background: var(--surface);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    padding: var(--space-lg) var(--space-md);
+    transform: translateY(100%);
+    transition: transform var(--duration-normal) var(--ease-out);
+  }
+  .edit-overlay.open .edit-panel {
+    transform: translateY(0);
+  }
+  .edit-handle {
+    width: 40px; height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 0 auto var(--space-lg);
+  }
+  .edit-title {
+    font-family: var(--font-display);
+    font-size: 18px; font-weight: 600; color: var(--fg);
+    margin-bottom: var(--space-lg);
+    text-align: center;
+  }
+  .edit-field {
+    margin-bottom: var(--space-md);
+  }
+  .edit-field label {
+    display: block;
+    font-size: 13px; color: var(--muted); font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .edit-field input, .edit-field select {
+    width: 100%; padding: 12px var(--space-md);
+    background: var(--bg); border: 1.5px solid var(--border);
+    border-radius: var(--radius-md); font-size: 15px; font-family: var(--font-body);
+    color: var(--fg);
+  }
+  .edit-field input:focus, .edit-field select:focus {
+    outline: none; border-color: var(--accent);
+  }
+  .edit-category-row {
+    display: flex; gap: var(--space-sm);
+    flex-wrap: wrap;
+  }
+  .edit-cat-chip {
+    padding: 6px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-full);
+    background: var(--bg);
+    font-size: 13px; font-weight: 500; color: var(--fg);
+    cursor: pointer;
+    transition: all var(--duration-fast);
+  }
+  .edit-cat-chip:hover { border-color: var(--accent); }
+  .edit-cat-chip.selected {
+    background: var(--accent-pale);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .edit-actions {
+    display: flex; gap: var(--space-sm);
+    margin-top: var(--space-lg);
+  }
+  .edit-actions button {
+    flex: 1; padding: 14px;
+    border: none; border-radius: var(--radius-md);
+    font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+  .edit-actions .cancel {
+    background: var(--bg); color: var(--muted);
+  }
+  .edit-actions .save {
+    background: var(--accent); color: #fff;
+  }
+
+  .snackbar {
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--fg); color: var(--surface); padding: 12px 24px;
+    border-radius: var(--radius-full); font-size: 14px; font-weight: 500;
+    opacity: 0; transition: all var(--duration-normal) var(--ease-out);
+    z-index: 200; white-space: nowrap;
+  }
+  .snackbar.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .app.ios .app-bar { padding-top: 48px; }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="app-bar">
+    <a href="home.html" class="back-btn" aria-label="返回">←</a>
+    <span class="app-bar-title">识图确认</span>
+    <button class="confirm-btn" onclick="confirmAll()">确认添加</button>
+  </div>
+
+  <div class="content">
+    <div class="result-header">
+      <h2>识别到 <span id="itemCount">3</span> 笔账单</h2>
+      <p>请核对以下信息，可点击编辑或删除</p>
+    </div>
+
+    <div class="detected-list" id="detectedList">
+      <div class="detected-item" data-id="0">
+        <div class="detected-icon food">&#x1F37D;</div>
+        <div class="detected-info">
+          <div class="detected-title">午餐 · 拉面</div>
+          <div class="detected-meta">今天 12:30</div>
+        </div>
+        <div class="detected-amount">¥35.00</div>
+        <div class="detected-actions">
+          <button class="detected-action-btn" onclick="editItem(0)" aria-label="编辑">&#x270E;</button>
+          <button class="detected-action-btn delete" onclick="deleteItem(0)" aria-label="删除">&#x2715;</button>
+        </div>
+      </div>
+      <div class="detected-item" data-id="1">
+        <div class="detected-icon shopping">&#x1F6CD;</div>
+        <div class="detected-info">
+          <div class="detected-title">超市采购</div>
+          <div class="detected-meta">今天 14:00</div>
+        </div>
+        <div class="detected-amount">¥128.50</div>
+        <div class="detected-actions">
+          <button class="detected-action-btn" onclick="editItem(1)" aria-label="编辑">&#x270E;</button>
+          <button class="detected-action-btn delete" onclick="deleteItem(1)" aria-label="删除">&#x2715;</button>
+        </div>
+      </div>
+      <div class="detected-item" data-id="2">
+        <div class="detected-icon entertain">&#x1F3AC;</div>
+        <div class="detected-info">
+          <div class="detected-title">电影票</div>
+          <div class="detected-meta">今天 16:30</div>
+        </div>
+        <div class="detected-amount">¥50.00</div>
+        <div class="detected-actions">
+          <button class="detected-action-btn" onclick="editItem(2)" aria-label="编辑">&#x270E;</button>
+          <button class="detected-action-btn delete" onclick="deleteItem(2)" aria-label="删除">&#x2715;</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="total-bar">
+      <span class="total-label">合计</span>
+      <span class="total-value" id="totalValue">¥213.50</span>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Panel -->
+<div class="edit-overlay" id="editOverlay" onclick="closeEdit(event)">
+  <div class="edit-panel" onclick="event.stopPropagation()">
+    <div class="edit-handle"></div>
+    <div class="edit-title">编辑记录</div>
+    <div class="edit-field">
+      <label>金额</label>
+      <input type="number" id="editAmount" value="35.00" step="0.01" inputmode="decimal">
+    </div>
+    <div class="edit-field">
+      <label>分类</label>
+      <div class="edit-category-row" id="editCategory">
+        <button class="edit-cat-chip selected" data-cat="food">餐饮</button>
+        <button class="edit-cat-chip" data-cat="transport">交通</button>
+        <button class="edit-cat-chip" data-cat="shopping">购物</button>
+        <button class="edit-cat-chip" data-cat="entertain">娱乐</button>
+        <button class="edit-cat-chip" data-cat="medical">医疗</button>
+        <button class="edit-cat-chip" data-cat="education">教育</button>
+        <button class="edit-cat-chip" data-cat="housing">住房</button>
+        <button class="edit-cat-chip" data-cat="other">其他</button>
+      </div>
+    </div>
+    <div class="edit-field">
+      <label>日期</label>
+      <input type="date" id="editDate" value="2026-05-19">
+    </div>
+    <div class="edit-field">
+      <label>时间</label>
+      <input type="time" id="editTime" value="12:30">
+    </div>
+    <div class="edit-actions">
+      <button class="cancel" onclick="closeEdit()">取消</button>
+      <button class="save" onclick="saveEdit()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="snackbar" id="snackbar"></div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('platform') === 'ios') document.getElementById('app').classList.add('ios');
+
+  const items = [
+    { id: 0, icon: 'food', title: '午餐 · 拉面', meta: '今天 12:30', amount: 35.00 },
+    { id: 1, icon: 'shopping', title: '超市采购', meta: '今天 14:00', amount: 128.50 },
+    { id: 2, icon: 'entertain', title: '电影票', meta: '今天 16:30', amount: 50.00 },
+  ];
+
+  let editingId = null;
+
+  function updateTotal() {
+    const total = items.reduce((s, i) => s + i.amount, 0);
+    document.getElementById('totalValue').textContent = '¥' + total.toFixed(2);
+    document.getElementById('itemCount').textContent = items.length;
+  }
+
+  function editItem(id) {
+    editingId = id;
+    const item = items[id];
+    document.getElementById('editAmount').value = item.amount.toFixed(2);
+    document.getElementById('editDate').value = '2026-05-19';
+    document.getElementById('editTime').value = item.meta.split(' ')[1];
+    document.getElementById('editOverlay').classList.add('open');
+  }
+
+  function closeEdit(e) {
+    if (e && e.target !== e.currentTarget) return;
+    document.getElementById('editOverlay').classList.remove('open');
+    editingId = null;
+  }
+
+  function saveEdit() {
+    if (editingId === null) return;
+    const amount = parseFloat(document.getElementById('editAmount').value);
+    const cat = document.querySelector('.edit-cat-chip.selected').dataset.cat;
+    const time = document.getElementById('editTime').value;
+    items[editingId].amount = amount;
+    items[editingId].meta = '今天 ' + time;
+    items[editingId].icon = cat;
+    renderList();
+    closeEdit();
+    showSnackbar('已更新');
+  }
+
+  function deleteItem(id) {
+    const idx = items.findIndex(i => i.id === id);
+    if (idx > -1) items.splice(idx, 1);
+    renderList();
+    updateTotal();
+    showSnackbar('已删除');
+  }
+
+  function confirmAll() {
+    showSnackbar('已添加 ' + items.length + ' 条记录');
+    setTimeout(() => { window.location.href = 'home.html'; }, 600);
+  }
+
+  function renderList() {
+    const list = document.getElementById('detectedList');
+    list.innerHTML = items.map((item, i) => `
+      <div class="detected-item" data-id="${i}">
+        <div class="detected-icon ${item.icon}">${getIcon(item.icon)}</div>
+        <div class="detected-info">
+          <div class="detected-title">${item.title}</div>
+          <div class="detected-meta">${item.meta}</div>
+        </div>
+        <div class="detected-amount">¥${item.amount.toFixed(2)}</div>
+        <div class="detected-actions">
+          <button class="detected-action-btn" onclick="editItem(${i})" aria-label="编辑">&#x270E;</button>
+          <button class="detected-action-btn delete" onclick="deleteItem(${i})" aria-label="删除">&#x2715;</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function getIcon(cat) {
+    const icons = { food: '&#x1F37D;', transport: '&#x1F687;', shopping: '&#x1F6CD;', entertain: '&#x1F3AC;', medical: '&#x1F3E5;', education: '&#x1F4DA;', housing: '&#x1F3E0;', other: '&#x1F4E6;' };
+    return icons[cat] || icons.other;
+  }
+
+  // Category chips
+  document.getElementById('editCategory').addEventListener('click', (e) => {
+    if (e.target.classList.contains('edit-cat-chip')) {
+      document.querySelectorAll('.edit-cat-chip').forEach(c => c.classList.remove('selected'));
+      e.target.classList.add('selected');
+    }
+  });
+
+  function showSnackbar(msg) {
+    const sb = document.getElementById('snackbar');
+    sb.textContent = msg;
+    sb.classList.add('show');
+    setTimeout(() => sb.classList.remove('show'), 2000);
+  }
+</script>
+</body>
+</html>
