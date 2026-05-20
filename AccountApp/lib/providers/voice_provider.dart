@@ -44,8 +44,15 @@ class VoiceNotifier extends StateNotifier<VoiceState> {
   VoiceNotifier(this._voiceService) : super(const VoiceState());
 
   Future<void> startRecording() async {
-    await _voiceService.startRecording();
-    state = state.copyWith(state: RecordingState.recording, isCancelled: false);
+    try {
+      await _voiceService.startRecording();
+      state = state.copyWith(state: RecordingState.recording, isCancelled: false);
+    } catch (e) {
+      state = state.copyWith(
+        state: RecordingState.error,
+        errorMessage: e.toString(),
+      );
+    }
   }
 
   Future<String?> stopRecording() async {

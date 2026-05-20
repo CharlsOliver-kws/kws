@@ -1,27 +1,34 @@
 import 'package:home_widget/home_widget.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'dart:io' show Platform;
 
 class WidgetUpdateService {
   static Future<void> updateWidget() async {
+    if (!Platform.isAndroid) return;
+
     final today = await _getTodayStats();
     final monthly = await _getMonthlyStats();
 
-    await HomeWidget.saveWidgetData<String>(
-      'today_amount',
-      today['amount']!.toStringAsFixed(2),
-    );
-    await HomeWidget.saveWidgetData<int>('today_count', today['count']!.toInt());
-    await HomeWidget.saveWidgetData<String>(
-      'monthly_amount',
-      monthly['amount']!.toStringAsFixed(2),
-    );
-    await HomeWidget.saveWidgetData<int>('monthly_count', monthly['count']!.toInt());
-    await HomeWidget.updateWidget(
-      name: 'AccountWidgetProvider',
-      androidName: 'AccountWidgetProvider',
-      qualifiedAndroidName: 'com.example.account_app.AccountWidgetProvider',
-    );
+    try {
+      await HomeWidget.saveWidgetData<String>(
+        'today_amount',
+        today['amount']!.toStringAsFixed(2),
+      );
+      await HomeWidget.saveWidgetData<int>('today_count', today['count']!.toInt());
+      await HomeWidget.saveWidgetData<String>(
+        'monthly_amount',
+        monthly['amount']!.toStringAsFixed(2),
+      );
+      await HomeWidget.saveWidgetData<int>('monthly_count', monthly['count']!.toInt());
+      await HomeWidget.updateWidget(
+        name: 'AccountWidgetProvider',
+        androidName: 'AccountWidgetProvider',
+        qualifiedAndroidName: 'com.example.account_app.AccountWidgetProvider',
+      );
+    } catch (_) {
+      // Ignore widget update failures so core record flow is not affected.
+    }
   }
 
   static Future<Map<String, double>> _getTodayStats() async {
